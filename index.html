@@ -1,0 +1,263 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holy Bible App</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap">
+    <style>
+        /* CSS will go here */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif', serif;
+            line-height: 1.8;
+            background: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .app-header {
+            background: rgb(90, 105, 122) 41, 66;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .app-header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .selection-panel {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .dropdown {
+            padding: 10px 15px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex: 1;
+            font-family: inherit;
+        }
+
+        .bible-display {
+            padding: 25px;
+            min-height: 300px;
+        }
+
+        .verse {
+            margin-bottom: 15px;
+        }
+
+        .verse-num {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            vertical-align: super;
+            margin-right: 3px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .app-footer {
+            text-align: center;
+            padding: 15px;
+            background: #ecf0f1;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .selection-panel {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Holy Bible</h1>
+            <p>Read God's Word</p>
+        </header>
+        
+        <div class="selection-panel">
+            <select id="book-select" class="dropdown">
+                <option value="">Select a Book</option>
+                <!-- Filled by JavaScript -->
+            </select>
+            
+            <select id="chapter-select" class="dropdown" disabled>
+                <option value="">Select Chapter</option>
+            </select>
+        </div>
+        
+        <div class="bible-display" id="bible-text">
+            <p class="loading">Select a book and chapter to begin reading</p>
+        </div>
+        
+        <footer class="app-footer">
+            <p>Powered by Bible-API.com</p>
+        </footer>
+    </div>
+
+    <script>
+        // JavaScript will go here
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const bookSelect = document.getElementById('book-select');
+            const chapterSelect = document.getElementById('chapter-select');
+            const bibleText = document.getElementById('bible-text');
+            
+            // Bible Books Data
+            const bibleBooks = [
+                { name: "Genesis", chapters: 50, value: "genesis" },
+                { name: "Exodus", chapters: 40, value: "exodus" },
+                { name: "Leviticus", chapters: 27, value: "leviticus" },
+                { name: "Numbers", chapters: 36, value: "numbers" },
+                { name: "Deuteronomy", chapters: 34, value: "deuteronomy" },
+                { name: "Joshua", chapters: 24, value: "joshua" },
+                { name: "Judges", chapters: 21, value: "judges" },
+                { name: "Ruth", chapters: 4, value: "ruth" },
+                { name: "1 Samuel", chapters: 31, value: "1 samuel" },
+                { name: "2 Samuel", chapters: 24, value: "2 samuel" },
+                { name: "1 Kings", chapters: 22, value: "1 kings" },
+                { name: "2 Kings", chapters: 25, value: "2 kings" },
+                { name: "1 Chronicles", chapters: 29, value: "1 chronicles" },
+                { name: "2 Chronicles", chapters: 36, value: "2 chronicles" },
+                { name: "Ezra", chapters: 10, value: "ezra" },
+                { name: "Nehemiah", chapters: 13, value: "nehemiah" },
+                { name: "Esther", chapters: 10, value: "esther" },
+                { name: "Job", chapters: 42, value: "job" },
+                { name: "Psalms", chapters: 150, value: "psalms" },
+                { name: "Proverbs", chapters: 31, value: "proverbs" },
+                { name: "Ecclesiastes", chapters: 12, value: "ecclesiastes" },
+                { name: "Song of Solomon", chapters: 8, value: "song of solomon" },
+                { name: "Isaiah", chapters: 66, value: "isaiah" },
+                { name: "Jeremiah", chapters: 52, value: "jeremiah" },
+                { name: "Lamentations", chapters: 5, value: "lamentations" },
+                { name: "Ezekiel", chapters: 48, value: "ezekiel" },
+                { name: "Daniel", chapters: 12, value: "daniel" },
+                { name: "Hosea", chapters: 14, value: "hosea" },
+                { name: "Joel", chapters: 3, value: "joel" },
+                { name: "Amos", chapters: 9, value: "amos" },
+                { name: "Obadiah", chapters: 1, value: "obadiah" },
+                { name: "Jonah", chapters: 4, value: "jonah" },
+                { name: "Micah", chapters: 7, value: "micah" },
+                { name: "Nahum", chapters: 3, value: "nahum" },
+                { name: "Habakkuk", chapters: 3, value: "habakkuk" },
+                { name: "Zephaniah", chapters: 3, value: "zephaniah" },
+                { name: "Haggai", chapters: 2, value: "haggai" },
+                { name: "Zechariah", chapters: 14, value: "zechariah" },
+                { name: "Malachi", chapters: 4, value: "malachi" },
+                { name: "Matthew", chapters: 28, value: "matthew" },
+                { name: "Mark", chapters: 16, value: "mark" },
+                { name: "Luke", chapters: 24, value: "luke" },
+                { name: "John", chapters: 21, value: "john" },
+                { name: "Acts", chapters: 28, value: "acts" },
+                { name: "Romans", chapters: 16, value: "romans" },
+                { name: "1 Corinthians", chapters: 16, value: "1 corinthians" },
+                { name: "2 Corinthians", chapters: 13, value: "2 corinthians" },
+                { name: "Galatians", chapters: 6, value: "galatians" },
+                { name: "Ephesians", chapters: 6, value: "ephesians" },
+                { name: "Philippians", chapters: 4, value: "philippians" },
+                { name: "Colossians", chapters: 4, value: "colossians" },
+                { name: "1 Thessalonians", chapters: 5, value: "1 thessalonians" },
+                { name: "2 Thessalonians", chapters: 3, value: "2 thessalonians" },
+                { name: "1 Timothy", chapters: 6, value: "1 timothy" },
+                { name: "2 Timothy", chapters: 4, value: "2 timothy" },
+                { name: "Titus", chapters: 3, value: "titus" },
+                { name: "Philemon", chapters: 1, value: "philemon" },
+                { name: "Hebrews", chapters: 13, value: "hebrews" },
+                { name: "James", chapters: 5, value: "james" },
+                { name: "1 Peter", chapters: 5, value: "1 peter" },
+                { name: "2 Peter", chapters: 3, value: "2 peter" },
+                { name: "1 John", chapters: 5, value: "1 john" },
+                { name: "2 John", chapters: 1, value: "2 john" },
+                { name: "3 John", chapters: 1, value: "3 john" },
+                { name: "Jude", chapters: 1, value: "jude" },
+                { name: "Revelation", chapters: 22, value: "revelation" }
+            ];
+            
+            // Populate Book Dropdown
+            bibleBooks.forEach(book => {
+                const option = document.createElement('option');
+                option.value = book.value;
+                option.textContent = book.name;
+                bookSelect.appendChild(option);
+            });
+            
+            // When book is selected
+            bookSelect.addEventListener('change', function() {
+                const selectedBook = this.value;
+                chapterSelect.innerHTML = '<option value="">Select Chapter</option>';
+                chapterSelect.disabled = !selectedBook;
+                
+                if (selectedBook) {
+                    const book = bibleBooks.find(b => b.value === selectedBook);
+                    for (let i = 1; i <= book.chapters; i++) {
+                        const option = document.createElement('option');
+                        option.value = i;
+                        option.textContent = `Chapter ${i}`;
+                        chapterSelect.appendChild(option);
+                    }
+                    chapterSelect.disabled = false;
+                }
+            });
+            
+            // When chapter is selected
+            chapterSelect.addEventListener('change', function() {
+                const book = bookSelect.value;
+                const chapter = this.value;
+                
+                if (book && chapter) {
+                    bibleText.innerHTML = '<p class="loading">Loading Scripture...</p>';
+                    
+                    // Fetch from Bible API
+                    fetch(`https://bible-api.com/${book} ${chapter}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.verses) {
+                                let html = `<h2>${data.reference}</h2>`;
+                                data.verses.forEach(verse => {
+                                    html += `<div class="verse">
+                                        <span class="verse-num">${verse.verse}</span>
+                                        ${verse.text}
+                                    </div>`;
+                                });
+                                bibleText.innerHTML = html;
+                            } else {
+                                bibleText.innerHTML = `<p>Error: ${data.error || 'Unable to load scripture'}</p>`;
+                            }
+                        })
+                        .catch(error => {
+                            bibleText.innerHTML = `<p>Error loading scripture. Please try again.</p>`;
+                            console.error('Error:', error);
+                        });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
